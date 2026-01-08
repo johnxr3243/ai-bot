@@ -1,0 +1,5 @@
+{
+  "python.defaultInterpreterPath": "/workspaces/ai-bot/.venv/bin/python",
+  "python.analysis.extraPaths": ["."],
+  "python.languageServer": "Pylance"
+}
