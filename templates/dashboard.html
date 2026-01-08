@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SIENNA AI | Neural Command Center</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@300;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- Tailwind (optional) + local CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/dashboard_style.css">
+</head>
+<body class="bg-black text-white overflow-hidden font-['Inter']">
+
+    <!-- Top Navigation -->
+    <nav class="relative z-50 flex justify-between items-center px-8 py-4 glass-nav border-b border-white/5">
+        <div class="flex items-center gap-8">
+            <h1 class="brand-logo text-2xl font-black italic tracking-tighter">SIENNA <span class="text-purple-500">AI</span></h1>
+
+            <div class="nav-links flex gap-1 bg-white/5 p-1 rounded-xl">
+                <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn active">
+                    <i class="fa-solid fa-chart-simple mr-2"></i>OVERVIEW
+                </button>
+                <button onclick="switchTab('chars')" id="tab-chars" class="tab-btn">
+                    <i class="fa-solid fa-users-viewfinder mr-2"></i>CHARACTERS
+                </button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3 bg-white/5 py-1.5 pl-1.5 pr-4 rounded-full border border-white/10">
+                <img src="https://cdn.discordapp.com/avatars/{{user.id}}/{{user.avatar}}.png" class="w-8 h-8 rounded-full" onerror="this.style.display='none'">
+                <span class="text-xs font-bold tracking-tight">{{ user.username }}</span>
+            </div>
+
+            <div class="relative">
+                <button id="menu-trigger" class="w-10 h-10 rounded-xl hover:bg-white/10 transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
+                </button>
+
+                <div id="settings-dropdown" class="absolute right-0 top-12 w-64 glass-card rounded-2xl p-4 shadow-2xl opacity-0 scale-95 pointer-events-none transition-all duration-300">
+                    <h4 class="text-[10px] font-black text-purple-500 uppercase mb-4 tracking-widest">System</h4>
+                    <form action="/save" method="POST" id="quick-save-form" class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-medium text-gray-300">DM Notifications</span>
+                            <input type="hidden" name="notifications" value="off">
+                            <label class="switch">
+                                <input type="checkbox" name="notifications" value="on" {% if settings.notifications %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-white/5">
+                            <span class="text-xs font-medium text-gray-300">Site Language</span>
+                            <div class="flex bg-black/40 rounded-lg p-1">
+                                <a href="/dashboard?lang=en" class="px-2 py-1 text-[10px] font-bold {{ 'bg-purple-600 text-white rounded' if lang=='en' else '' }}">EN</a>
+                                <a href="/dashboard?lang=ar" class="px-2 py-1 text-[10px] font-bold ml-1 {{ 'bg-purple-600 text-white rounded' if lang=='ar' else '' }}">AR</a>
+                            </div>
+                        </div>
+
+                        <a href="/logout" class="block w-full py-2 mt-4 text-center text-xs font-black text-red-500 hover:bg-red-500/10 rounded-lg transition">LOGOUT</a>
+
+                        <!-- hidden inputs required for quick-save form -->
+                        <input type="hidden" name="bot_name" value="{{settings.bot_name}}">
+                        <input type="hidden" name="lang" value="{{settings.language}}">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="relative z-10 flex-1 h-[calc(100vh-80px)] overflow-hidden">
+        <!-- Overview -->
+        <section id="sec-stats" class="h-full p-8 animate__animated animate__fadeIn">
+            <div class="max-w-6xl mx-auto space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="stat-card glass-card p-6 rounded-3xl">
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">SYSTEM STATUS</p>
+                        <h3 class="text-2xl font-black text-green-400">ACTIVE</h3>
+                    </div>
+                    <div class="stat-card glass-card p-6 rounded-3xl">
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Total Intelligence</p>
+                        <h3 class="text-2xl font-black">Level {{ settings.level if settings.level else 1 }}</h3>
+                    </div>
+                    <div class="stat-card glass-card p-6 rounded-3xl">
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Neural Pulses</p>
+                        <h3 class="text-2xl font-black">{{ settings.messages }} <span class="text-xs font-normal text-gray-500">msgs</span></h3>
+                    </div>
+                    <div class="stat-card glass-card p-6 rounded-3xl">
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Current Mode</p>
+                        <h3 class="text-2xl font-black text-purple-400 uppercase">{{ '🔞 SEX' if settings.sex_mode else '✨ NORMAL' }}</h3>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-[40px] p-12 relative overflow-hidden flex items-center justify-between">
+                    <div class="relative z-10 max-w-lg">
+                        <h2 class="text-5xl font-black leading-none mb-4">Mastering <br>The Neural Core</h2>
+                        <p class="text-gray-400 text-sm font-light leading-relaxed">
+                            Welcome, Controller. Your SIENNA unit is operating in <b>{{ 'Extreme' if settings.sex_mode else 'Standard' }}</b> mode. Changes here affect the personality matrix immediately.
+                        </p>
+                    </div>
+                    <div class="unit-visual">
+                        <div class="pulse-circle"></div>
+                        <i class="fa-solid fa-brain text-[120px] text-purple-600/30"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Characters -->
+        <section id="sec-chars" class="h-full hidden overflow-hidden">
+            <div class="flex h-full">
+                <aside class="w-80 border-r border-white/5 p-6 flex flex-col gap-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-black text-xs text-gray-500 uppercase tracking-widest">Unit Presets</h3>
+                        <button onclick="createNewChar()" class="text-[10px] font-black bg-white text-black px-3 py-1 rounded-full hover:bg-purple-500 hover:text-white transition">NEW +</button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scroll" id="presets-list">
+                        <!-- presets loaded by JS -->
+                    </div>
+                </aside>
+
+                <div class="flex-1 p-8 overflow-y-auto">
+                    <form action="/save" method="POST" class="max-w-4xl space-y-10">
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="group">
+                                <label class="text-[10px] font-black text-purple-500 uppercase ml-2 mb-2 block">Identity Name</label>
+                                <input type="text" id="bot_name" name="bot_name" value="{{settings.bot_name}}" class="matrix-input" required>
+                                <div id="preset-locked" class="mt-2 text-xs text-yellow-300 hidden">🔒 Locked preset — press NEW to create an editable character</div>
+                            </div>
+                            <div class="group">
+                                <label class="text-[10px] font-black text-purple-500 uppercase ml-2 mb-2 block">Language</label>
+                                <select name="lang" id="lang" class="matrix-input">
+                                    <option value="en" {% if settings.language == 'en' %}selected{% endif %}>English / Global</option>
+                                    <option value="ar" {% if settings.language == 'ar' %}selected{% endif %}>Arabic / Egyptian</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-8 rounded-[32px]">
+                            <h3 class="text-xl font-bold mb-8">Personality Matrix</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
+                                <div class="space-y-8">
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Curiosity</span><span id="v1">{{ settings.traits.curiosity }}%</span></div>
+                                        <input id="s1" type="range" name="curiosity" value="{{settings.traits.curiosity}}" min="0" max="100" class="m-range r-purp" oninput="updateRange('v1', this.value)">
+                                    </div>
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Sensitivity</span><span id="v2">{{ settings.traits.sensitivity }}%</span></div>
+                                        <input id="s2" type="range" name="sensitivity" value="{{settings.traits.sensitivity}}" min="0" max="100" class="m-range r-pink" oninput="updateRange('v2', this.value)">
+                                    </div>
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Intelligence</span><span id="v3">{{ settings.traits.intelligence }}%</span></div>
+                                        <input id="s3" type="range" name="intelligence" value="{{settings.traits.intelligence}}" min="0" max="100" class="m-range r-blue" oninput="updateRange('v3', this.value)">
+                                    </div>
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Kindness</span><span id="v4">{{ settings.traits.kindness }}%</span></div>
+                                        <input id="s4" type="range" name="kindness" value="{{settings.traits.kindness}}" min="0" max="100" class="m-range r-green" oninput="updateRange('v4', this.value)">
+                                    </div>
+                                </div>
+
+                                <div class="space-y-8">
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Happiness</span><span id="v5">{{ settings.traits.happiness }}%</span></div>
+                                        <input id="s5" type="range" name="happiness" value="{{settings.traits.happiness}}" min="0" max="100" class="m-range r-yell" oninput="updateRange('v5', this.value)">
+                                    </div>
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Sadness</span><span id="v6">{{ settings.traits.sadness }}%</span></div>
+                                        <input id="s6" type="range" name="sadness" value="{{settings.traits.sadness}}" min="0" max="100" class="m-range r-cyan" oninput="updateRange('v6', this.value)">
+                                    </div>
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Boldness</span><span id="v7">{{ settings.traits.boldness }}%</span></div>
+                                        <input id="s7" type="range" name="boldness" value="{{settings.traits.boldness}}" min="0" max="100" class="m-range r-red" oninput="updateRange('v7', this.value)">
+                                    </div>
+                                    <div class="matrix-slider">
+                                        <div class="flex justify-between text-[10px] font-black text-gray-400 mb-2 uppercase"><span>Shyness</span><span id="v8">{{ settings.traits.shyness }}%</span></div>
+                                        <input id="s8" type="range" name="shyness" value="{{settings.traits.shyness}}" min="0" max="100" class="m-range r-ora" oninput="updateRange('v8', this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-6 rounded-3xl flex items-center justify-between border border-red-500/20">
+                            <div>
+                                <h4 class="font-bold text-red-500 uppercase text-xs">Hazardous Protocol: SEX MODE</h4>
+                                <p class="text-[10px] text-gray-500 uppercase font-black">Requires unit age validation (18+)</p>
+                            </div>
+                            <input type="hidden" name="sex_mode" value="off">
+                            <label class="switch sex-switch">
+                                <input type="checkbox" name="sex_mode" value="on" {% if settings.sex_mode %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <input type="hidden" name="notifications" value="{{ 'on' if settings.notifications else 'off' }}">
+                        <input type="hidden" name="level" value="{{ settings.level if settings.level else 1 }}">
+
+                        <button type="submit" class="save-btn">SAVE AND DEPLOY NEURAL CHANGES</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-10 right-10 z-[100] glass-card p-4 rounded-2xl border-l-4 border-green-500 translate-x-[200%] transition-all duration-500">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-500">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+                <p class="font-bold text-sm">Synchronized!</p>
+                <p class="text-[10px] text-gray-400">Unit updated successfully.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/dashboard_script.js"></script>
+</body>
+</html>

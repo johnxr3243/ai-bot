@@ -1,0 +1,196 @@
+/* --- Neural Core Variables --- */
+:root {
+    --primary: #7c3aed;
+    --primary-glow: rgba(124, 58, 237, 0.5);
+    --bg-dark: #050505;
+    --card-bg: rgba(15, 15, 15, 0.7);
+    --border: rgba(255, 255, 255, 0.05);
+    --text-dim: #94a3b8;
+    
+    /* Matrix Colors */
+    --c-purp: #a78bfa; --c-pink: #f472b6; --c-blue: #3b82f6; --c-green: #22c55e;
+    --c-yell: #eab308; --c-cyan: #06b6d4; --c-red: #ef4444; --c-ora: #f97316;
+}
+
+/* --- Base Styling --- */
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
+}
+
+body {
+    background-color: var(--bg-dark);
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-nav {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(15px);
+}
+
+/* --- Navigation Buttons --- */
+.tab-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    opacity: 0.5;
+}
+
+.tab-btn:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
+.tab-btn.active { opacity: 1; background: rgba(124, 58, 237, 0.2); color: var(--primary); }
+
+/* --- Dropdown Logic --- */
+#menu-trigger.active + #settings-dropdown {
+    opacity: 1;
+    scale: 1;
+    pointer-events: all;
+}
+
+/* --- Stat Cards --- */
+.stat-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px -10px var(--primary-glow);
+}
+
+/* --- Matrix Inputs --- */
+.matrix-input {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    color: white;
+    padding: 15px;
+    border-radius: 15px;
+    width: 100%;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.matrix-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* --- Matrix Sliders (Custom Styling) --- */
+.m-range {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    outline: none;
+}
+
+.m-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Slider Colors */
+.r-purp::-webkit-slider-thumb { background: var(--c-purp); box-shadow: 0 0 15px var(--c-purp); }
+.r-pink::-webkit-slider-thumb { background: var(--c-pink); box-shadow: 0 0 15px var(--c-pink); }
+.r-blue::-webkit-slider-thumb { background: var(--c-blue); box-shadow: 0 0 15px var(--c-blue); }
+.r-green::-webkit-slider-thumb { background: var(--c-green); box-shadow: 0 0 15px var(--c-green); }
+.r-yell::-webkit-slider-thumb { background: var(--c-yell); box-shadow: 0 0 15px var(--c-yell); }
+.r-cyan::-webkit-slider-thumb { background: var(--c-cyan); box-shadow: 0 0 15px var(--c-cyan); }
+.r-red::-webkit-slider-thumb { background: var(--c-red); box-shadow: 0 0 15px var(--c-red); }
+.r-ora::-webkit-slider-thumb { background: var(--c-ora); box-shadow: 0 0 15px var(--c-ora); }
+
+/* --- Modern Toggle Switch --- */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #222;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute; content: "";
+    height: 18px; width: 18px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: var(--primary); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+.sex-switch input:checked + .slider { background-color: #ef4444; }
+
+/* --- Buttons --- */
+.save-btn {
+    width: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    background: linear-gradient(90deg, var(--primary), #db2777);
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    letter-spacing: 2px;
+    transition: 0.4s;
+    box-shadow: 0 10px 30px -10px var(--primary-glow);
+}
+
+.save-btn:hover {
+    transform: scale(1.02);
+    filter: brightness(1.2);
+    box-shadow: 0 15px 40px -10px var(--primary-glow);
+}
+
+/* --- Visual FX --- */
+.unit-visual {
+    position: relative;
+    padding: 40px;
+}
+
+.pulse-circle {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px; height: 150px;
+    background: var(--primary);
+    border-radius: 50%;
+    filter: blur(50px);
+    opacity: 0.2;
+    animation: pulse 4s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { scale: 1; opacity: 0.1; }
+    50% { scale: 1.5; opacity: 0.3; }
+}
+
+/* --- Scrollbar --- */
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--primary); }

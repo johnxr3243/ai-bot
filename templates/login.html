@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SIENNA AI | The Awakening</title>
+    
+    <!-- Fonts: Outfit for headers, Inter for text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate.css for entrance animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- Tailwind CSS for base layout (we will add custom CSS next) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Link to our Custom CSS file (We will create this next) -->
+    <link rel="stylesheet" href="/static/css/login_style.css">
+</head>
+<body class="bg-black overflow-hidden">
+
+    <!-- Layer 0: Background Canvas for Particles/Nebula -->
+    <canvas id="bg-canvas" class="absolute inset-0 z-0"></canvas>
+
+    <!-- Layer 1: Ambient Light Glows -->
+    <div class="glow-bg absolute inset-0 z-10">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <!-- Layer 2: Main Content Container -->
+    <main class="relative z-20 min-h-screen flex items-center justify-center p-4">
+        
+        <!-- Login Card -->
+        <div class="login-card glass-container animate__animated animate__zoomIn">
+            
+            <!-- Logo Section -->
+            <div class="logo-wrapper mb-8 text-center">
+                <div class="logo-icon animate__animated animate__pulse animate__infinite">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <h1 class="brand-name mt-4 uppercase tracking-[0.2em] font-black">
+                    Sienna <span class="text-purple-500">AI</span>
+                </h1>
+                <div class="status-badge mt-2">
+                    <span class="dot"></span>
+                    <span class="status-text">SYSTEM ONLINE</span>
+                </div>
+            </div>
+
+            <!-- Content Section -->
+            <div class="content-section text-center mb-10">
+                <h2 class="text-3xl font-semibold mb-3 tracking-tight">Access Control</h2>
+                <p class="text-gray-400 font-light leading-relaxed max-w-xs mx-auto">
+                    Connect your neural interface to customize and command your SIENNA unit.
+                </p>
+            </div>
+
+            <!-- Action Section -->
+            <div class="action-wrapper space-y-4">
+                <a href="/login" class="discord-btn group relative overflow-hidden flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-bold text-lg transition-all duration-500">
+                    <span class="relative z-10 flex items-center gap-3">
+                        <i class="fa-brands fa-discord text-2xl group-hover:rotate-[360deg] transition-transform duration-700"></i>
+                        LOGIN WITH DISCORD
+                    </span>
+                    <div class="btn-shine absolute inset-0"></div>
+                </a>
+                
+                <!-- Security Note -->
+                <div class="flex items-center justify-center gap-2 text-[10px] text-gray-500 uppercase tracking-widest mt-6">
+                    <i class="fa-solid fa-shield-halved text-purple-500/50"></i>
+                    <span>Secure OAuth2 Authentication</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Floating Decorative Elements -->
+        <div class="decor-element el-1"></div>
+        <div class="decor-element el-2"></div>
+    </main>
+
+    <!-- Overlay Loading Screen (Hidden by default) -->
+    <div id="loader" class="fixed inset-0 z-[100] bg-black flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- JavaScript - (We will create login_script.js next) -->
+    <script src="/static/js/login_script.js"></script>
+</body>
+</html>
