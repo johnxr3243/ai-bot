@@ -15,7 +15,7 @@ client = AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",
 )
 
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
 BOT_PREFIX = os.getenv("BOT_PREFIX", "!")
 
 intents = discord.Intents.default()
