@@ -252,9 +252,8 @@ async def get_ai_response(user_message, user_id):
     user_conversation_history[uid].append({"role": "user", "content": user_message, "time": datetime.now().isoformat()})
 
     try:
-        model_name = os.getenv("OPENROUTER_MODEL", "x-ai/grok-4.1-fast")
         response = await client.chat.completions.create(
-            model=model_name,
+            model="x-ai/grok-4.1-fast",
             messages=[{"role": "system", "content": system_prompt}] + user_conversation_history[uid][-5:],
             temperature=0.9,
             max_tokens=500 if data.get("sex_mode") else 250,
@@ -572,9 +571,7 @@ async def check_inactive_users():
     while not bot.is_closed():
         try:
             now = datetime.now()
-            # iterate over a static list of keys to avoid runtime changes
-            for user_id_str in list(user_last_active.keys()):
-                last_active = user_last_active.get(user_id_str)
+            for user_id_str, last_active in list(user_last_active.items()):
                 if user_id_str in user_data and user_data[user_id_str].get("activated"):
                     inactive_time = (now - last_active).total_seconds()
                     if inactive_time > 120 and user_id_str not in notified_users:
@@ -631,13 +628,9 @@ async def on_message(message):
     # رسائل الخاص (DM)
     if message.guild is None:
         uid = str(message.author.id)
+
         if uid not in user_data:
             load_single_user(uid)
-
-        # إذا لم يكن مفعلاً ولم يبدأ الإعداد، لا ترد عليه إلا لو كتب !activate
-        curr_state = user_data.get(uid, {}).get("state", "none")
-        if not user_data.get(uid, {}).get("activated", False) and curr_state == "none":
-            return
 
         user_last_active[uid] = datetime.now()
         if uid in notified_users:
@@ -665,30 +658,30 @@ async def on_disconnect():
     save_data()
 
 def load_single_user(user_id):
-    uid = str(user_id)
-    file_path = os.path.join(DATA_DIR, f"{uid}.json")
+    file_path = os.path.join(DATA_DIR, f"{user_id}.json")
     if os.path.exists(file_path):
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                user_data[uid] = data.get("user_data", {})
-                user_progress[uid] = data.get("user_progress", {"level": 1, "xp": 0, "messages": 0})
-                user_reminders[uid] = data.get("user_reminders", [])
-                user_conversation_history[uid] = data.get("user_conversation_history", [])
-                file_last_modified[uid] = os.path.getmtime(file_path)
-        except:
-            # corrupted file: initialize minimal defaults
-            user_data[uid] = {"activated": False, "state": "none"}
-            user_progress[uid] = {"level": 1, "xp": 0, "messages": 0}
-            user_reminders[uid] = []
-            user_conversation_history[uid] = []
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            user_data[user_id] = data.get("user_data", {})
+            user_progress[user_id] = data.get("user_progress", {})
+            user_reminders[user_id] = data.get("user_reminders", {})
+            user_conversation_history[user_id] = data.get("user_conversation_history", [])
+            file_last_modified[user_id] = os.path.getmtime(file_path)
     else:
-        # new user who did not run !activate yet
-        if uid not in user_data:
-            user_data[uid] = {"activated": False, "state": "none"}
-            user_progress[uid] = {"level": 1, "xp": 0, "messages": 0}
-            user_reminders[uid] = []
-            user_conversation_history[uid] = []
+        user_data[user_id] = {
+            "activated": False,
+            "state": "waiting_language",
+            "language": None,
+            "age": None,
+            "bot_name": "Sienna",
+            "user_name": None,
+            "sex_mode": False,
+            "joined_at": datetime.now().isoformat()
+        }
+        user_progress[user_id] = {"level": 1, "xp": 0, "messages": 0}
+        user_reminders[user_id] = []
+        user_conversation_history[user_id] = []
+        save_user_data(user_id)
     return True
 
 if __name__ == "__main__":
