@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # تشغيل البوت في الخلفية مع تفعيل الـ Unbuffered mode للـ Logs
-python -u bot.py &
+python -u bot.py 
 
 # انتظار بسيط للتأكد من بدء البوت
 sleep 2

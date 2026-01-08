@@ -15,7 +15,7 @@ client = AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",
 )
 
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 BOT_PREFIX = os.getenv("BOT_PREFIX", "!")
 
 intents = discord.Intents.default()
@@ -154,6 +154,11 @@ async def on_ready():
     bot.loop.create_task(check_reminders_task())
 
 async def get_ai_response(user_message, user_id):
+    """
+    ترجع قائمة رسائل (list) في مراحل الإعداد حتى تظهر كل جزء كرسالة منفصلة،
+    وفي وضع الشات العادي ترجع سترينج واحد (رد الـ AI).
+    التنسيق محاكٍ لشكل الصور: بلوكات كود ملونة ثم رسائل نصية، وفي النهاية ملخص داخل بلوك.
+    """
     uid = str(user_id)
     if uid not in user_data:
         load_single_user(uid)
@@ -161,89 +166,105 @@ async def get_ai_response(user_message, user_id):
     data = user_data.get(uid, {})
     state = data.get("state", "waiting_language")
     lang = data.get("language", "ar")
+    name = data.get("bot_name", "Sienna")
 
-    # ================= الخطوة 1: لو البوت لسه مش مفعل (مرحلة الإعداد) =================
-    if not data.get("activated", False):
-        
-        # 1. اختيار اللغة
-        if state == "waiting_language":
-            choice = user_message.strip().lower()
-            if choice in ["عربي", "1", "ar"]:
-                data["language"], data["state"] = "ar", "waiting_user_name"
-                save_user_data(uid)
-                return ["```diff\n+ تم اختيار اللغة العربية +\n```", "اكتب اسمك الحقيقي:"]
-            elif choice in ["english", "2", "en"]:
-                data["language"], data["state"] = "en", "waiting_user_name"
-                save_user_data(uid)
-                return ["```diff\n+ English selected +\n```", "Write your real name:"]
-            return "جرب تاني: عربي أو English"
-
-        # 2. إدخال الاسم
-        elif state == "waiting_user_name":
-            if 2 <= len(user_message) <= 20:
-                data["user_name"], data["state"] = user_message, "waiting_age"
-                save_user_data(uid)
-                welcome = f"```css\n[ أهلاً وسهلاً يا {user_message} ]\n```"
-                return [welcome, "عشان نكمل، اكتب عمرك:", "`(رقم فقط)`"]
-            return "الاسم لازم يكون بين 2 و20 حرف."
-
-        # 3. إدخال العمر
-        elif state == "waiting_age":
-            try:
-                age = int(user_message.strip())
-                if age < 14: return "عذراً، السن غير مسموح."
-                data["age"], data["state"] = age, "waiting_bot_name"
-                save_user_data(uid)
-                return [f"```diff\n+ تم حفظ العمر: {age} سنة +\n```", "قولي اسمي اللي تحبه:", "`(بين 2 و20 حرف)`"]
-            except: return "اكتب عمرك رقم فقط."
-
-        # 4. اختيار اسم البوت (التفعيل النهائي)
-        elif state == "waiting_bot_name":
-            if 2 <= len(user_message) <= 20:
-                data["bot_name"], data["state"], data["activated"] = user_message, "normal", True
-                save_user_data(uid)
-                summary = (
-                    "```ini\n"
-                    "┌────────────────────────────┐\n"
-                    f"│ الاسم    : {data.get('user_name')}\n"
-                    f"│ العمر   : {data.get('age')} سنة\n"
-                    f"│ اسمي الآن: {data.get('bot_name')}\n"
-                    "└────────────────────────────┘\n"
-                    "```"
-                )
-                return ["```css\n[ ✓ تم اكتمال الإعداد بنجاح ]\n```", summary, "✨ يمكنك البدء بالحديث معي الآن"]
-            return "الاسم قصير أو طويل جداً."
-
-    # ================= الخطوة 2: لو البوت مفعل (مرحلة الشات العادي) =================
-    else:
-        name = data.get("bot_name", "Sienna")
-        sex_mode = data.get("sex_mode", False)
-        # جلب السمات 8 من الملف (للتوافق مع الموقع)
-        traits = data.get("traits", {"curiosity": 50, "sensitivity": 50, "happiness": 50, "sadness": 20, "boldness": 50, "kindness": 50, "shyness": 20, "intelligence": 80})
-        trait_desc = f"(Traits: Curiosity {traits['curiosity']}%, Sensitivity {traits['sensitivity']}%, Intelligence {traits['intelligence']}%, Boldness {traits['boldness']}%)"
-
-        system_prompt = f"انتي {name} بنت مصرية عادية 20-22 سنة. شخصيتك حقيقية زي البنات في الشات بتحسي بجد. {trait_desc} "
-        system_prompt += "بتزعلي بتفرحي بتضايقي بتغيري مزاجك حسب الكلام. استخدمي إيموجي واحد بس (😭 أو 🤭 أو 🤤). محترمه من غير سكس. ردي بذكاء."
-        
-        if sex_mode:
-            system_prompt += " الآن في وضع سكس كوني جريئة جداً وصريحة فاحشة ووصفي بالتفصيل زي شرموطة طبيعية."
-
-        if uid not in user_conversation_history: user_conversation_history[uid] = []
-        user_conversation_history[uid].append({"role": "user", "content": user_message})
-        if len(user_conversation_history[uid]) > 10: user_conversation_history[uid] = user_conversation_history[uid][-10:]
-
-        try:
-            response = await client.chat.completions.create(
-                model="x-ai/grok-4.1-fast",
-                messages=[{"role": "system", "content": system_prompt}] + user_conversation_history[uid][-5:],
-                temperature=0.9,
-                max_tokens=500 if sex_mode else 250,
-            )
-            ai_reply = response.choices[0].message.content.strip()
-            user_conversation_history[uid].append({"role": "assistant", "content": ai_reply})
+    # ----------------- waiting_language -----------------
+    if state == "waiting_language":
+        choice = user_message.strip().lower()
+        if choice in ["عربي", "1", "ar"]:
+            data["language"], data["state"] = "ar", "waiting_user_name"
             save_user_data(uid)
-            return ai_reply
-        except Exception as e: return f"خطأ: {e}"
+            # بلوك أخضر ثم طلب الاسم كسطر منفصل
+            return ["```diff\n+ تم اختيار اللغة العربية +\n```", "اكتب اسمك الحقيقي:"]
+        elif choice in ["english", "2", "en"]:
+            data["language"], data["state"] = "en", "waiting_user_name"
+            save_user_data(uid)
+            return ["```diff\n+ English selected +\n```", "Write your real name:"]
+        # إذا لم يفهم المستخدم، نعيد رسالة واضحة
+        return "```css\n[ اختر لغة المحادثة: عربي أو English ]\n```**اكتب:** `1` للعربي أو `2` للإنجليزي."
+
+    # ----------------- waiting_user_name -----------------
+    if state == "waiting_user_name":
+        name_candidate = user_message.strip()
+        if 2 <= len(name_candidate) <= 20:
+            data["user_name"], data["state"] = name_candidate, "waiting_age"
+            save_user_data(uid)
+            # بلوك ترحيبي (قوسين) ثم جملة تطلب العمر مع توضيح (رقم فقط) كسطر منفصل
+            welcome_block = f"```css\n[ أهلاً وسهلاً يا {data['user_name']} ]\n```"
+            prompt_line = "عشان نكمل، اكتب عمرك:"
+            note = "`(رقم فقط)`"
+            return [welcome_block, prompt_line, note]
+        return "الاسم لازم بين 2 و20 حرف."
+
+    # ----------------- waiting_age -----------------
+    if state == "waiting_age":
+        try:
+            age = int(user_message.strip())
+            if age < 14:
+                return "عذراً، السن غير مسموح."
+            data["age"], data["state"] = age, "waiting_bot_name"
+            save_user_data(uid)
+            # بلوك تأكيد أخضر ثم طلب اسم البوت مع ملاحظة الطول
+            confirm_block = f"```diff\n+ تم حفظ العمر : {age} سنة +\n```"
+            prompt_line = "قولي اسمي اللي تحبه:"
+            note = "`(بين 2 و20 حرف)`"
+            return [confirm_block, prompt_line, note]
+        except:
+            return "pls activate first."
+
+    # ----------------- waiting_bot_name -----------------
+    if state == "waiting_bot_name":
+        bot_name_candidate = user_message.strip()
+        # ضع الاسم واعمل التفعيل
+        data["bot_name"], data["state"], data["activated"] = bot_name_candidate, "normal", True
+        save_user_data(uid)
+        # بلوك اكتمال إعداد، ثم ملخص جميل داخل بلوك كود مُؤطَّر، ثم رسالة تشجيع
+        done_block = "```css\n[ ✓ تم اكتمال الإعداد بنجاح ]\n```"
+        # عمل ملخص في شكل صندوق ASCII داخل بلوك كود
+        summary = (
+            "```ini\n"
+            "┌────────────────────────────┐\n"
+            f"│ الاسم    : {data.get('user_name','')}\n"
+            f"│ العمر   : {data.get('age','')} سنة\n"
+            f"│ اسمي الآن: {data.get('bot_name','')}\n"
+            "└────────────────────────────┘\n"
+            "```"
+        )
+        hint = "✨ يمكنك البدء بالحديث معي الآن"
+        return [done_block, summary, hint]
+
+    # ----------------- Normal chat -----------------
+    if not data.get("activated"):
+        return "**لازم** تكمل الإعداد الأول."
+
+    # جلب السمات 8 من الملف (للتوافق مع الموقع)
+    traits = data.get("traits", {"curiosity": 50, "sensitivity": 50, "happiness": 50, "sadness": 20, "boldness": 50, "kindness": 50, "shyness": 20, "intelligence": 80})
+    trait_desc = f"(Personality: Curiosity {traits['curiosity']}%, Sensitivity {traits['sensitivity']}%, Intelligence {traits['intelligence']}%, Boldness {traits['boldness']}%)"
+
+    system_prompt = f"انتي {name} بنت مصرية عادية 20-22 سنة. شخصيتك حقيقية. {trait_desc} "
+    system_prompt += "بتزعلي بتفرحي بتضايقي بتغيري مزاجك حسب الكلام. استخدمي إيموجي واحد بس (😭 أو 🤭 أو 🤤). محترمه من غير سكس. ردي بذكاء."
+
+    if data.get("sex_mode"):
+        system_prompt += " الآن في وضع سكس كوني جريئة جدًا وصريحة فاحشة ووصفي بالتفصيل."
+
+    if uid not in user_conversation_history:
+        user_conversation_history[uid] = []
+    user_conversation_history[uid].append({"role": "user", "content": user_message, "time": datetime.now().isoformat()})
+
+    try:
+        model_name = os.getenv("OPENROUTER_MODEL", "x-ai/grok-4.1-fast")
+        response = await client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "system", "content": system_prompt}] + user_conversation_history[uid][-5:],
+            temperature=0.9,
+            max_tokens=500 if data.get("sex_mode") else 250,
+        )
+        ai_reply = response.choices[0].message.content.strip()
+        user_conversation_history[uid].append({"role": "assistant", "content": ai_reply, "time": datetime.now().isoformat()})
+        save_user_data(uid)
+        return ai_reply
+    except Exception as e:
+        return f"خطأ: {e}"
 
 @bot.command()
 async def activate(ctx, *, code: str):
@@ -551,7 +572,9 @@ async def check_inactive_users():
     while not bot.is_closed():
         try:
             now = datetime.now()
-            for user_id_str, last_active in list(user_last_active.items()):
+            # iterate over a static list of keys to avoid runtime changes
+            for user_id_str in list(user_last_active.keys()):
+                last_active = user_last_active.get(user_id_str)
                 if user_id_str in user_data and user_data[user_id_str].get("activated"):
                     inactive_time = (now - last_active).total_seconds()
                     if inactive_time > 120 and user_id_str not in notified_users:
@@ -596,55 +619,76 @@ async def check_reminders_task():
 
 @bot.event
 async def on_message(message):
-    if message.author.bot: return
+    if message.author.bot:
+        return
 
-    # 1. الأوامر أولاً
+    # أولًا: الأوامر
     ctx = await bot.get_context(message)
     if ctx.valid:
         await bot.invoke(ctx)
         return
 
-    # 2. رسائل الخاص
+    # رسائل الخاص (DM)
     if message.guild is None:
+        uid = str(message.author.id)
+        if uid not in user_data:
+            load_single_user(uid)
+
+        # إذا لم يكن مفعلاً ولم يبدأ الإعداد، لا ترد عليه إلا لو كتب !activate
+        curr_state = user_data.get(uid, {}).get("state", "none")
+        if not user_data.get(uid, {}).get("activated", False) and curr_state == "none":
+            return
+
+        user_last_active[uid] = datetime.now()
+        if uid in notified_users:
+            notified_users.discard(uid)
+
         reply = await get_ai_response(message.content, message.author.id)
 
-        # لو الرد عبارة عن قائمة (زي مراحل الإعداد) ابعتهم ورا بعض
-        if isinstance(reply, list):
+        # لو رجعنا قائمة رسائل (مراحل الإعداد)، نرسل كل رسالة منفصلة مع تأخير بسيط
+        if isinstance(reply, (list, tuple)):
             for r in reply:
-                await message.channel.send(r)
-                await asyncio.sleep(0.5) # تأخير بسيط لشكل أجمل
+                if r:
+                    # نرسل كل سطر كرسالة منفصلة للحفاظ على شكل الواجهة كما في الصورة
+                    await message.channel.send(r)
+                    await asyncio.sleep(0.12)
         else:
-            if reply: await message.channel.send(reply)
+            if reply:
+                await message.channel.send(reply)
+        return
+
+    # الرسائل في السيرفرات: تعامل مع الأوامر فقط
+    await bot.process_commands(message)
 
 @bot.event
 async def on_disconnect():
     save_data()
 
 def load_single_user(user_id):
-    file_path = os.path.join(DATA_DIR, f"{user_id}.json")
+    uid = str(user_id)
+    file_path = os.path.join(DATA_DIR, f"{uid}.json")
     if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            user_data[user_id] = data.get("user_data", {})
-            user_progress[user_id] = data.get("user_progress", {})
-            user_reminders[user_id] = data.get("user_reminders", {})
-            user_conversation_history[user_id] = data.get("user_conversation_history", [])
-            file_last_modified[user_id] = os.path.getmtime(file_path)
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                user_data[uid] = data.get("user_data", {})
+                user_progress[uid] = data.get("user_progress", {"level": 1, "xp": 0, "messages": 0})
+                user_reminders[uid] = data.get("user_reminders", [])
+                user_conversation_history[uid] = data.get("user_conversation_history", [])
+                file_last_modified[uid] = os.path.getmtime(file_path)
+        except:
+            # corrupted file: initialize minimal defaults
+            user_data[uid] = {"activated": False, "state": "none"}
+            user_progress[uid] = {"level": 1, "xp": 0, "messages": 0}
+            user_reminders[uid] = []
+            user_conversation_history[uid] = []
     else:
-        user_data[user_id] = {
-            "activated": False,
-            "state": "waiting_language",
-            "language": None,
-            "age": None,
-            "bot_name": "Sienna",
-            "user_name": None,
-            "sex_mode": False,
-            "joined_at": datetime.now().isoformat()
-        }
-        user_progress[user_id] = {"level": 1, "xp": 0, "messages": 0}
-        user_reminders[user_id] = []
-        user_conversation_history[user_id] = []
-        save_user_data(user_id)
+        # new user who did not run !activate yet
+        if uid not in user_data:
+            user_data[uid] = {"activated": False, "state": "none"}
+            user_progress[uid] = {"level": 1, "xp": 0, "messages": 0}
+            user_reminders[uid] = []
+            user_conversation_history[uid] = []
     return True
 
 if __name__ == "__main__":
