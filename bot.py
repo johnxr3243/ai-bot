@@ -181,7 +181,7 @@ async def get_ai_response(user_message, user_id):
             save_user_data(uid)
             return ["```diff\n+ English selected +\n```", "Write your real name:"]
         # إذا لم يفهم المستخدم، نعيد رسالة واضحة
-        return "```css\n[ اختر لغة المحادثة: عربي أو English ]\n```**اكتب:** `1` للعربي أو `2` للإنجليزي."
+        return "```css\n[ Please activate bot ]!activate"
 
     # ----------------- waiting_user_name -----------------
     if state == "waiting_user_name":
