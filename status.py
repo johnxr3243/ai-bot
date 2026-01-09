@@ -497,18 +497,16 @@ import os
 from dotenv import load_dotenv
 
 # تحميل متغيرات البيئة من ملف .env
-load_dotenv()
+import os
+import sys
 
-# الحصول على التوكن من متغير البيئة
+# محاولة الحصول على التوكن من Railway أو البيئة
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 
 if not TOKEN:
-    print("❌ خطأ: لم يتم العثور على DISCORD_BOT_TOKEN في ملف .env")
-    print("📝 قم بإنشاء ملف .env وأضف:")
-    print("   DISCORD_BOT_TOKEN=توكن_البوت_هنا")
-    exit(1)
+    print("❌ خطأ: لم يتم العثور على DISCORD_BOT_TOKEN")
+    print("🔧 التأكد من:")
+    print("   1. إضافة DISCORD_BOT_TOKEN في Railway Variables")
+    print("   2. أو إنشاء ملف .env محلي للتطوير")
+    sys.exit(1)
 
-print(f"✅ تم تحميل التوكن (الطول: {len(TOKEN)})")
-
-# تشغيل البوت
-bot.run(TOKEN)
