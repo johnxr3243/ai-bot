@@ -18,6 +18,12 @@ client = AsyncOpenAI(
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 BOT_PREFIX = os.getenv("BOT_PREFIX", "!")
 
+if not DISCORD_TOKEN:
+    print("❌ ERROR: DISCORD_TOKEN environment variable not set!")
+    exit(1)
+else:
+    print(f"✅ Discord Token found. Bot starting...")
+
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
