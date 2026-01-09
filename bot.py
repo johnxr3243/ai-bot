@@ -2468,7 +2468,7 @@ async def on_ready():
         while True:
             await bot.change_presence(activity=discord.Streaming(
                 name="Sienna AI Dashboard", 
-                url="https://sienna-ai.pages.dev"
+                url="https://twitch.tv/discord"
             ))
             await asyncio.sleep(15)
             
