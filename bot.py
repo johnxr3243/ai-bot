@@ -148,17 +148,7 @@ async def watch_files():
                     print(f"🔄 تم تحديث بيانات المستخدم {user_id} من الموقع.")
                     try:
                         user = await bot.fetch_user(int(user_id))
-                        
-                        # إنشاء Embed للإشعار
-                        embed = discord.Embed(
-                            title="✨ تم تحديث الإعدادات",
-                            description="تم تحديث إعدادات البوت من الموقع بنجاح!",
-                            color=discord.Color.green(),
-                            timestamp=datetime.now()
-                        )
-                        embed.set_footer(text="التحديثات أصبحت فعالة الآن")
-                        
-                        await user.send(embed=embed)
+                        await user.send("```css\n[ ✨ تم تحديث إعداداتي من الموقع بنجاح! ]\n```")
                     except: pass
             else:
                 file_last_modified[user_id] = current_mtime
@@ -184,38 +174,6 @@ async def on_ready():
     bot.loop.create_task(check_inactive_users())
     bot.loop.create_task(check_reminders_task())
     print(f"✅ تم تحميل {len(user_data)} مستخدم")
-
-def create_preset_embed():
-    """إنشاء Embed مسبق لأزرار التفعيل"""
-    embed = discord.Embed(
-        title="🎮 **تفعيل البوت**",
-        description="لبدء استخدام البوت، يجب تفعيله أولاً",
-        color=discord.Color.blue(),
-        timestamp=datetime.now()
-    )
-    
-    embed.add_field(
-        name="📝 **كيفية التفعيل**",
-        value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
-        inline=False
-    )
-    
-    embed.add_field(
-        name="🔑 **رمز التفعيل**",
-        value="```MYSECRET123```",
-        inline=True
-    )
-    
-    embed.add_field(
-        name="ℹ️ **معلومات**",
-        value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
-        inline=False
-    )
-    
-    embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
-    embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
-    
-    return embed
 
 def get_quick_response(message, user_data):
     """ردود سريعة مبرمجة"""
@@ -251,9 +209,9 @@ def get_quick_response(message, user_data):
     
     return None
 
-async def get_ai_response(user_message, user_id, ctx=None):
+async def get_ai_response(user_message, user_id):
     """
-    ترجع Embeds جاهزة بدلاً من نصوص عادية
+    البوت يتكلم عادي (بدون Embeds) - فقط ردود OpenAI عادية
     """
     uid = str(user_id)
     if uid not in user_data:
@@ -267,79 +225,20 @@ async def get_ai_response(user_message, user_id, ctx=None):
     # التحقق من الردود السريعة أولاً
     quick_reply = get_quick_response(user_message, data)
     if quick_reply:
-        embed = discord.Embed(
-            description=quick_reply,
-            color=discord.Color.gold(),
-            timestamp=datetime.now()
-        )
-        embed.set_footer(text=f"{name} • Quick Response")
-        return {"type": "embed", "content": embed}
+        return quick_reply
 
     # ----------------- waiting_language -----------------
     if state == "waiting_language":
         choice = user_message.strip().lower()
-        
         if choice in ["عربي", "1", "ar"]:
             data["language"], data["state"] = "ar", "waiting_user_name"
             save_user_data(uid)
-            
-            embed = discord.Embed(
-                title="🌍 **تم اختيار اللغة**",
-                description="✅ **اللغة العربية** تم اختيارها بنجاح",
-                color=discord.Color.green(),
-                timestamp=datetime.now()
-            )
-            embed.add_field(
-                name="📝 **الخطوة التالية**",
-                value="**اكتب اسمك الحقيقي:**",
-                inline=False
-            )
-            embed.add_field(
-                name="💡 **ملاحظة**",
-                value="```(بين 2 و 20 حرفاً)```",
-                inline=False
-            )
-            embed.set_footer(text="مرحلة 1/4 • اختيار الاسم")
-            
-            return {"type": "embed", "content": embed}
-            
+            return ["```diff\n+ تم اختيار اللغة العربية +\n```", "اكتب اسمك الحقيقي:"]
         elif choice in ["english", "2", "en"]:
             data["language"], data["state"] = "en", "waiting_user_name"
             save_user_data(uid)
-            
-            embed = discord.Embed(
-                title="🌍 **Language Selected**",
-                description="✅ **English** language has been selected",
-                color=discord.Color.green(),
-                timestamp=datetime.now()
-            )
-            embed.add_field(
-                name="📝 **Next Step**",
-                value="**Write your real name:**",
-                inline=False
-            )
-            embed.add_field(
-                name="💡 **Note**",
-                value="```(Between 2 and 20 characters)```",
-                inline=False
-            )
-            embed.set_footer(text="Step 1/4 • Choosing Name")
-            
-            return {"type": "embed", "content": embed}
-        
-        # إذا كان الاختيار خاطئاً
-        embed = discord.Embed(
-            title="⚠️ **تنبيه**",
-            description="**يجب تفعيل البوت أولاً**\nاستخدم الأمر التالي:",
-            color=discord.Color.red()
-        )
-        embed.add_field(
-            name="🔑 **أمر التفعيل**",
-            value="```!activate MYSECRET123```",
-            inline=False
-        )
-        embed.set_footer(text="ابدأ بالتسجيل أولاً")
-        return {"type": "embed", "content": embed}
+            return ["```diff\n+ English selected +\n```", "Write your real name:"]
+        return "```css\n[ ⚠️ يجب تفعيل البوت أولاً ]\n```استخدم: `!activate MYSECRET123`"
 
     # ----------------- waiting_user_name -----------------
     if state == "waiting_user_name":
@@ -347,78 +246,20 @@ async def get_ai_response(user_message, user_id, ctx=None):
         if 2 <= len(name_candidate) <= 20:
             data["user_name"], data["state"] = name_candidate, "waiting_age"
             save_user_data(uid)
-            
-            embed = discord.Embed(
-                title=f"👤 **مرحباً {name_candidate}!**",
-                description="✅ **تم حفظ اسمك بنجاح**",
-                color=discord.Color.blue(),
-                timestamp=datetime.now()
-            )
-            embed.add_field(
-                name="🎂 **الخطوة التالية**",
-                value="**أدخل عمرك:**",
-                inline=False
-            )
-            embed.add_field(
-                name="📌 **شرط العمر**",
-                value="```(يجب أن يكون 14 سنة أو أكثر)```",
-                inline=False
-            )
-            embed.set_footer(text="مرحلة 2/4 • إدخال العمر")
-            
-            return {"type": "embed", "content": embed}
-        else:
-            embed = discord.Embed(
-                title="⚠️ **خطأ في الاسم**",
-                description="**الاسم يجب أن يكون بين 2 و 20 حرفاً**",
-                color=discord.Color.red()
-            )
-            embed.set_footer(text="جرب اسماً أقصر أو أطول")
-            return {"type": "embed", "content": embed}
+            return [f"```css\n[ 👤 أهلاً وسهلاً يا {data['user_name']} ]\n```", "عشان نكمل، اكتب عمرك:", "`(رقم فقط)`"]
+        return "```css\n[ ⚠️ الاسم لازم بين 2 و20 حرف ]\n```جرب اسماً أقصر أو أطول"
 
     # ----------------- waiting_age -----------------
     if state == "waiting_age":
         try:
             age = int(user_message.strip())
             if age < 14:
-                embed = discord.Embed(
-                    title="🚫 **غير مسموح**",
-                    description="**العمر يجب أن يكون 14 سنة أو أكثر**",
-                    color=discord.Color.red()
-                )
-                embed.set_footer(text="يجب أن تكون بالغاً لاستخدام البوت")
-                return {"type": "embed", "content": embed}
-            
+                return "```diff\n- عذراً، السن غير مسموح\n```يجب أن يكون 14 سنة أو أكثر"
             data["age"], data["state"] = age, "waiting_bot_name"
             save_user_data(uid)
-            
-            embed = discord.Embed(
-                title="✅ **تم حفظ العمر**",
-                description=f"**تم تسجيل عمرك: {age} سنة**",
-                color=discord.Color.green(),
-                timestamp=datetime.now()
-            )
-            embed.add_field(
-                name="🤖 **الخطوة التالية**",
-                value="**ما هو اسمي الذي تريده؟**",
-                inline=False
-            )
-            embed.add_field(
-                name="✨ **تخصيص**",
-                value="```(اختر اسمي المفضل لديك)```",
-                inline=False
-            )
-            embed.set_footer(text="مرحلة 3/4 • تسمية البوت")
-            
-            return {"type": "embed", "content": embed}
+            return [f"```diff\n+ تم حفظ العمر : {age} سنة +\n```", "قولي اسمي اللي تحبه:", "`(بين 2 و20 حرف)`"]
         except:
-            embed = discord.Embed(
-                title="⚠️ **خطأ في العمر**",
-                description="**الرجاء إدخال عمر صحيح (رقم فقط)**",
-                color=discord.Color.red()
-            )
-            embed.set_footer(text="أدخل رقماً فقط مثل: 18")
-            return {"type": "embed", "content": embed}
+            return "```css\n[ ⚠️ الرجاء إدخال عمر صحيح ]\n```أدخل رقماً فقط مثل: 18"
 
     # ----------------- waiting_bot_name -----------------
     if state == "waiting_bot_name":
@@ -426,68 +267,22 @@ async def get_ai_response(user_message, user_id, ctx=None):
         if 2 <= len(bot_name_candidate) <= 20:
             data["bot_name"], data["state"], data["activated"] = bot_name_candidate, "normal", True
             save_user_data(uid)
-            
-            # Embed نهائي مع ملخص
-            embed = discord.Embed(
-                title="🎉 **الإعداد اكتمل بنجاح!**",
-                description="✨ **تم تفعيل البوت واكتمال جميع الإعدادات**",
-                color=discord.Color.gold(),
-                timestamp=datetime.now()
-            )
-            
-            # إضافة معلومات المستخدم في شكل جميل
-            embed.add_field(
-                name="📋 **ملخص معلوماتك**",
-                value=f"""
-                ```yaml
-                الاسم: {data.get('user_name', 'غير معروف')}
-                العمر: {data.get('age', 'غير معروف')} سنة
-                اللغة: {data.get('language', 'عربي')}
-                اسم البوت: {data.get('bot_name', 'Sienna')}
-                تاريخ التسجيل: {datetime.now().strftime('%Y-%m-%d %H:%M')}
-                ```
-                """,
-                inline=False
-            )
-            
-            embed.add_field(
-                name="🚀 **جاهز للبدء**",
-                value="**يمكنك الآن البدء بالحديث معي بشكل طبيعي!**",
-                inline=False
-            )
-            
-            embed.add_field(
-                name="📚 **الأوامر المتاحة**",
-                value="استخدم `!help` لعرض جميع الأوامر",
-                inline=False
-            )
-            
-            embed.set_footer(text=f"تمت العملية بنجاح • {datetime.now().strftime('%H:%M:%S')}")
-            embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/✅.png")
-            
-            return {"type": "embed", "content": embed}
-        else:
-            embed = discord.Embed(
-                title="⚠️ **خطأ في الاسم**",
-                description="**اسم البوت يجب أن يكون بين 2 و 20 حرفاً**",
-                color=discord.Color.red()
-            )
-            embed.set_footer(text="جرب اسماً مختلفاً")
-            return {"type": "embed", "content": embed}
+            return [
+                "```css\n[ ✓ تم اكتمال الإعداد بنجاح ]\n```",
+                f"""```ini
+┌────────────────────────────┐
+│ الاسم    : {data.get('user_name','')}
+│ العمر   : {data.get('age','')} سنة
+│ اسمي الآن: {data.get('bot_name','')}
+└────────────────────────────┘
+```""",
+                "✨ يمكنك البدء بالحديث معي الآن"
+            ]
+        return "```css\n[ ⚠️ اسم البوت لازم بين 2 و20 حرف ]\n```جرب اسماً مختلفاً"
 
     # ----------------- Normal chat -----------------
     if not data.get("activated"):
-        embed = discord.Embed(
-            title="🔒 **غير مفعل**",
-            description="**يجب إكمال عملية التفعيل أولاً**",
-            color=discord.Color.red()
-        )
-        embed.add_field(
-            name="📝 **كيف تفعل البوت؟**",
-            value="استخدم الأمر:\n```!activate MYSECRET123```",
-            inline=False
-        )
-        return {"type": "embed", "content": embed}
+        return "```css\n[ 🔒 غير مفعل ]\n```يجب إكمال عملية التفعيل أولاً\nاستخدم: `!activate MYSECRET123`"
 
     # ----------------- AI Chat Response -----------------
     traits = data.get("traits", {"curiosity": 50, "sensitivity": 50, "happiness": 50, "sadness": 20, "boldness": 50, "kindness": 50, "shyness": 20, "intelligence": 80})
@@ -527,48 +322,10 @@ async def get_ai_response(user_message, user_id, ctx=None):
         user_conversation_history[uid].append({"role": "assistant", "content": ai_reply, "time": datetime.now().isoformat()})
         save_user_data(uid)
         
-        # تحديد لون حسب المزاج
-        mood_color = discord.Color.purple() if data.get("sex_mode") else discord.Color.blue()
-        
-        # تحليل الرد لاختيار لون مناسب
-        if any(word in ai_reply for word in ["😊", "😂", "😍", "💖", "🎉", "✨", "🌟"]):
-            mood_color = discord.Color.gold()
-        elif any(word in ai_reply for word in ["😢", "😭", "💔", "😔", "😞"]):
-            mood_color = discord.Color.dark_grey()
-        
-        # إنشاء Embed للرد
-        embed = discord.Embed(
-            description=f"**{ai_reply}**",
-            color=mood_color,
-            timestamp=datetime.now()
-        )
-        
-        # إضافة معلومات شخصية
-        embed.set_author(
-            name=f"{name} 🤖 • {data.get('user_name', 'صديقي')}",
-            icon_url="https://cdn.discordapp.com/emojis/💬.png"
-        )
-        
-        # إضافة معلومات إحصائية
-        messages_count = user_progress.get(uid, {}).get("messages", 0)
-        embed.set_footer(
-            text=f"المحادثة #{messages_count + 1} • {datetime.now().strftime('%I:%M %p')}"
-        )
-        
-        # إضافة صورة رمزية حسب المزاج
-        mood_emojis = ["😊", "🤔", "😌", "😄", "🤗", "😇", "🥰"]
-        embed.set_thumbnail(url=f"https://cdn.discordapp.com/emojis/{random.choice(mood_emojis)}.png")
-        
-        return {"type": "embed", "content": embed}
+        return ai_reply
         
     except Exception as e:
-        embed = discord.Embed(
-            title="⚠️ **خطأ تقني**",
-            description=f"**حدث خطأ أثناء معالجة طلبك:**\n```{str(e)[:150]}```",
-            color=discord.Color.red()
-        )
-        embed.set_footer(text="يرجى المحاولة مرة أخرى لاحقاً")
-        return {"type": "embed", "content": embed}
+        return f"```css\n[ ⚠️ خطأ تقني ]\n```حدث خطأ: `{str(e)[:100]}`\nيرجى المحاولة مرة أخرى لاحقاً"
 
 @bot.command()
 async def activate(ctx, *, code: str):
@@ -760,7 +517,34 @@ async def show_help(ctx):
 
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
 
@@ -897,7 +681,34 @@ async def my_profile(ctx):
 
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
 
@@ -1145,7 +956,34 @@ async def truth_or_dare(ctx):
     
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
     
@@ -1220,7 +1058,34 @@ async def luck_test(ctx):
     
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
     
@@ -1351,7 +1216,34 @@ async def daily_reward(ctx):
     
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
     
@@ -1414,6 +1306,8 @@ async def daily_reward(ctx):
     
     # مكافآت إضافية حسب التسلسل
     bonus = 0
+    lang = user_data[user_id_str].get("language", "ar")
+    
     if streak >= 7:
         bonus = 100
         bonus_text = "🎉 **مكافأة أسبوعية!** +100 XP" if lang == "ar" else "🎉 **Weekly bonus!** +100 XP"
@@ -1443,8 +1337,6 @@ async def daily_reward(ctx):
     
     user_progress[user_id_str]["xp"] = user_progress[user_id_str].get("xp", 0) + total_xp
     save_user_data(user_id_str)
-    
-    lang = user_data[user_id_str].get("language", "ar")
     
     if lang == "ar":
         embed = discord.Embed(
@@ -1550,7 +1442,34 @@ async def reminder(ctx, time: str, *, message: str):
     
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
     
@@ -1698,7 +1617,34 @@ async def show_reminders(ctx):
     
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
     
@@ -1822,7 +1768,34 @@ async def clear_chat(ctx, limit: int = 50):
     
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
     
@@ -1884,7 +1857,34 @@ async def format_user(ctx):
     
     user_id_str = str(ctx.author.id)
     if user_id_str not in user_data or not user_data[user_id_str].get("activated", False):
-        embed = create_preset_embed()
+        embed = discord.Embed(
+            title="🎮 **تفعيل البوت**",
+            description="لبدء استخدام البوت، يجب تفعيله أولاً",
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        
+        embed.add_field(
+            name="📝 **كيفية التفعيل**",
+            value="أرسل الأمر التالي:\n```!activate MYSECRET123```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🔑 **رمز التفعيل**",
+            value="```MYSECRET123```",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="ℹ️ **معلومات**",
+            value="بعد التفعيل، ستتم إرشادك خلال خطوات الإعداد",
+            inline=False
+        )
+        
+        embed.set_footer(text="ابدأ رحلتك مع البوت الآن!")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/🎮.png")
+        
         await ctx.send(embed=embed)
         return
 
@@ -2335,15 +2335,7 @@ async def check_inactive_users():
                                     
                                     message = random.choice(messages)
                                     
-                                    # إنشاء Embed للإشعار
-                                    embed = discord.Embed(
-                                        description=message,
-                                        color=discord.Color.orange(),
-                                        timestamp=datetime.now()
-                                    )
-                                    embed.set_footer(text="اشتقتلك! 💕")
-                                    
-                                    await user.send(embed=embed)
+                                    await user.send(f"```css\n[ ⏰ إشعار ]\n```{message}")
                                     notified_users.add(user_id_str)
                                 except:
                                     pass
@@ -2364,23 +2356,10 @@ async def check_reminders_task():
                             lang = user_data.get(user_id_str, {}).get("language", "ar")
                             
                             if lang == "ar":
-                                embed = discord.Embed(
-                                    title="⏰ **تذكير**",
-                                    description=f"**{reminder.get('message', 'بدون رسالة')}**",
-                                    color=discord.Color.green(),
-                                    timestamp=datetime.now()
-                                )
-                                embed.set_footer(text="لا تنسى هذا المهمة!")
+                                await user.send(f"```css\n[ ⏰ تذكير ]\n```**{reminder.get('message', 'بدون رسالة')}**")
                             else:
-                                embed = discord.Embed(
-                                    title="⏰ **Reminder**",
-                                    description=f"**{reminder.get('message', 'No message')}**",
-                                    color=discord.Color.green(),
-                                    timestamp=datetime.now()
-                                )
-                                embed.set_footer(text="Don't forget this task!")
+                                await user.send(f"```css\n[ ⏰ Reminder ]\n```**{reminder.get('message', 'No message')}**")
                             
-                            await user.send(embed=embed)
                             reminders.remove(reminder)
                             save_user_data(user_id_str)
                         except:
@@ -2411,15 +2390,17 @@ async def on_message(message):
         if uid in notified_users:
             notified_users.discard(uid)
 
-        reply = await get_ai_response(message.content, message.author.id, ctx)
+        reply = await get_ai_response(message.content, message.author.id)
 
-        # التعامل مع Embeds أو النصوص
-        if isinstance(reply, dict) and reply.get("type") == "embed":
-            await message.channel.send(embed=reply["content"])
-        elif isinstance(reply, dict) and reply.get("type") == "text":
-            await message.channel.send(reply["content"])
+        # التعامل مع الردود العادية (بدون Embeds)
+        if isinstance(reply, (list, tuple)):
+            for r in reply:
+                if r:
+                    await message.channel.send(r)
+                    await asyncio.sleep(0.12)
         else:
-            await message.channel.send(reply)
+            if reply:
+                await message.channel.send(reply)
             
         # تحديث XP والمستوى
         if uid in user_progress:
@@ -2436,23 +2417,9 @@ async def on_message(message):
                 # إرسال رسالة ترقية
                 lang = user_data.get(uid, {}).get("language", "ar")
                 if lang == "ar":
-                    embed = discord.Embed(
-                        title=f"🎉 **تهانينا!**",
-                        description=f"**لقد ارتقيت إلى المستوى {current_level + 1}!**",
-                        color=discord.Color.gold(),
-                        timestamp=datetime.now()
-                    )
-                    embed.set_footer(text="استمر في التقدم! ⭐")
+                    await message.channel.send(f"```css\n[ 🎉 تهانينا! ]\n```**لقد ارتقيت إلى المستوى {current_level + 1}!** ⭐")
                 else:
-                    embed = discord.Embed(
-                        title=f"🎉 **Congratulations!**",
-                        description=f"**You leveled up to Level {current_level + 1}!**",
-                        color=discord.Color.gold(),
-                        timestamp=datetime.now()
-                    )
-                    embed.set_footer(text="Keep progressing! ⭐")
-                
-                await message.channel.send(embed=embed)
+                    await message.channel.send(f"```css\n[ 🎉 Congratulations! ]\n```**You leveled up to Level {current_level + 1}!** ⭐")
             
             save_user_data(uid)
         
