@@ -10,10 +10,6 @@ python bot.py &
 BOT_PID=$!
 echo "   Bot PID: $BOT_PID"
 
-echo "🤖 Starting Status Bot..."
-python status.py &
-BOT_PID=$!
-echo "   Bot PID: $BOT_PID"
 
 # Start web server
 echo "🌐 Starting FastAPI Web Server..."

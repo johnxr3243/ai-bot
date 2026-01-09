@@ -2460,6 +2460,11 @@ def load_single_user(user_id):
         save_user_data(user_id)
     return True
 
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user}')
+    await bot.change_presence(activity=discord.Streaming(name="My Stream", url="https://tv"))
+
 if __name__ == "__main__":
     if DISCORD_TOKEN:
         bot.run(DISCORD_TOKEN)
