@@ -78,13 +78,8 @@ class LuxuryTickets(commands.Cog):
     def save_config(self):
         """حفظ الإعدادات"""
         try:
-            # حفظ مؤقت أولاً ثم استبدال الملف الأصلي لأمان أفضل
-            temp_path = self.config_file + ".tmp"
-            with open(temp_path, 'w', encoding='utf-8') as f:
+            with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(self.config, f, ensure_ascii=False, indent=2)
-            if os.path.exists(self.config_file):
-                os.remove(self.config_file)
-            os.rename(temp_path, self.config_file)
         except Exception as e:
             print(f"❌ خطأ في حفظ الإعدادات: {e}")
     
@@ -101,55 +96,16 @@ class LuxuryTickets(commands.Cog):
     def save_tickets(self):
         """حفظ بيانات التذاكر"""
         try:
-            # حفظ مؤقت ثم استبدال الملف الأصلي لتقليل خطر الفساد
-            temp_path = self.tickets_file + ".tmp"
-            with open(temp_path, 'w', encoding='utf-8') as f:
+            with open(self.tickets_file, 'w', encoding='utf-8') as f:
                 json.dump(self.tickets, f, ensure_ascii=False, indent=2)
-            if os.path.exists(self.tickets_file):
-                os.remove(self.tickets_file)
-            os.rename(temp_path, self.tickets_file)
-            # كتابة نسخة احتياطية بسيطة
-            try:
-                backup_path = self.tickets_file + ".bak"
-                with open(backup_path, 'w', encoding='utf-8') as bf:
-                    json.dump(self.tickets, bf, ensure_ascii=False)
-            except:
-                pass
         except Exception as e:
             print(f"❌ خطأ في حفظ التذاكر: {e}")
     
     @tasks.loop(minutes=5)
     async def auto_save(self):
         """حفظ تلقائي"""
-        try:
-            # عمليات الحفظ الدورية الآمنة
-            self.save_config()
-            self.save_tickets()
-            print(f"💾 [LuxuryTickets] auto-save completed at {datetime.now().isoformat()}")
-        except Exception as e:
-            print(f"⚠️ [LuxuryTickets] error during auto-save: {e}")
-
-    def safe_save(self):
-        """تنفيذ حفظ آمن يدويًا - يستخدم عند الإيقاف أو تفريغ الكوج"""
-        try:
-            print("💾 [LuxuryTickets] performing safe save...")
-            self.save_config()
-            self.save_tickets()
-            print("✅ [LuxuryTickets] safe save completed")
-        except Exception as e:
-            print(f"❌ [LuxuryTickets] failed safe save: {e}")
-
-    def cog_unload(self):
-        """Called when the cog is unloaded; ensure data is saved."""
-        try:
-            self.auto_save.cancel()
-        except Exception:
-            pass
-        # حفظ آمن نهائي
-        try:
-            self.safe_save()
-        except Exception as e:
-            print(f"❌ [LuxuryTickets] error on cog_unload safe save: {e}")
+        self.save_config()
+        self.save_tickets()
     
     # ==================== أوامر الإعداد ====================
     

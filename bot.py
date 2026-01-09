@@ -2464,41 +2464,34 @@ def load_single_user(user_id):
 # نظام التذاكر الفاخم
 # ============================================
 
-async def load_luxury_tickets():
-    """تحميل نظام التذاكر الفاخم"""
-    try:
-        from luxury_tickets import setup
-        await setup(bot)
-        print("✨ نظام التذاكر الفاخم جاهز!")
-    except Exception as e:
-        print(f"❌ خطأ في تحميل نظام التذاكر: {e}")
+# ============================================
+# تشغيل البوت
+# ============================================
 
-# تعديل دالة on_ready
 @bot.event
 async def on_ready():
     print(f"✨ **البوت شغال** دلوقتي كـ {bot.user}")
     load_data()
-    watch_files.start()
-    cleanup_old_data.start()
+    # تشغيل المهام الجانبية
+    if not watch_files.is_running(): watch_files.start()
+    if not cleanup_old_data.is_running(): cleanup_old_data.start()
+    
     bot.loop.create_task(check_inactive_users())
     bot.loop.create_task(check_reminders_task())
-    print(f"✅ تم تحميل {len(user_data)} مستخدم")
     
-    # تحميل نظام التذاكر الفاخم
-    await load_luxury_tickets()
-
-# ============================================
-# تشغيل البوت
-# ============================================
+    # تحميل نظام التذاكر من الملف الثاني
+    try:
+        from luxury_tickets import setup
+        await setup(bot)
+        print("✅ تم تحميل نظام التذاكر")
+    except Exception as e:
+        print(f"❌ خطأ في تحميل نظام التذاكر: {e}")
 
 if __name__ == "__main__":
     if DISCORD_TOKEN:
         bot.run(DISCORD_TOKEN)
     else:
-        print("❌ Cannot start bot: DISCORD_TOKEN not provided.")
-        import time
-        while True:
-            time.sleep(60)
+        print("❌ لم يتم العثور على التوكن DISCORD_TOKEN")
 
 if __name__ == "__main__":
     if DISCORD_TOKEN:
