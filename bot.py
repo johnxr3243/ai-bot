@@ -2461,37 +2461,19 @@ def load_single_user(user_id):
     return True
 
 # ============================================
-# إصلاح أخطاء الأوامر
+# نظام التذاكر الفاخم
 # ============================================
 
-@bot.event
-async def on_command_error(ctx, error):
-    """إصلاح أخطاء الأوامر مثل <5"""
-    if isinstance(error, commands.CommandNotFound):
-        if ctx.message.content and len(ctx.message.content) > 0:
-            first_char = ctx.message.content[0]
-            if first_char in ['<', '>', '=', '+', '-', '*', '/']:
-                return
-    print(f"⚠️ خطأ: {error}")
-
-# ============================================
-# نظام التذاكر
-# ============================================
-
-async def load_tickets_system():
-    """تحميل نظام التذاكر"""
+async def load_luxury_tickets():
+    """تحميل نظام التذاكر الفاخم"""
     try:
-        # استيراد نظام التذاكر
-        from tickets import setup
-        
-        # إضافة النظام للبوت
+        from luxury_tickets import setup
         await setup(bot)
-        print("✅ نظام التذاكر مضاف بنجاح!")
-        
+        print("✨ نظام التذاكر الفاخم جاهز!")
     except Exception as e:
         print(f"❌ خطأ في تحميل نظام التذاكر: {e}")
 
-# تحميل نظام التذاكر عند تشغيل البوت
+# تعديل دالة on_ready
 @bot.event
 async def on_ready():
     print(f"✨ **البوت شغال** دلوقتي كـ {bot.user}")
@@ -2502,8 +2484,8 @@ async def on_ready():
     bot.loop.create_task(check_reminders_task())
     print(f"✅ تم تحميل {len(user_data)} مستخدم")
     
-    # تحميل نظام التذاكر
-    await load_tickets_system()
+    # تحميل نظام التذاكر الفاخم
+    await load_luxury_tickets()
 
 # ============================================
 # تشغيل البوت
@@ -2514,7 +2496,6 @@ if __name__ == "__main__":
         bot.run(DISCORD_TOKEN)
     else:
         print("❌ Cannot start bot: DISCORD_TOKEN not provided.")
-        print("ℹ️ Web server will still run. Configure DISCORD_TOKEN in Railway variables.")
         import time
         while True:
             time.sleep(60)
