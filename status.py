@@ -496,17 +496,20 @@ async def reload_status(ctx):
 import os
 from dotenv import load_dotenv
 
-# تحميل متغيرات البيئة من ملف .env
+# في بداية الملف بعد الـimports
 import os
-import sys
 
-# محاولة الحصول على التوكن من Railway أو البيئة
-TOKEN = os.getenv('DISCORD_BOT_TOKEN')
+# محاولة الحصول على التوكن بأي اسم
+TOKEN = (
+    os.getenv('DISCORD_BOT_TOKEN') or  # الاسم في Railway
+    os.getenv('DISCORD_TOKEN') or       # الاسم القديم
+    os.getenv('TOKEN')                  # أي اسم آخر
+)
 
 if not TOKEN:
-    print("❌ خطأ: لم يتم العثور على DISCORD_BOT_TOKEN")
-    print("🔧 التأكد من:")
-    print("   1. إضافة DISCORD_BOT_TOKEN في Railway Variables")
-    print("   2. أو إنشاء ملف .env محلي للتطوير")
-    sys.exit(1)
-
+    print("❌ خطأ: لم يتم العثور على توكن البوت!")
+    print("🔧 قم بإضافة أحد هذه المتغيرات في Railway:")
+    print("   • DISCORD_BOT_TOKEN")
+    print("   • DISCORD_TOKEN") 
+    print("   • TOKEN")
+    exit(1)
