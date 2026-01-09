@@ -19,8 +19,9 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 BOT_PREFIX = os.getenv("BOT_PREFIX", "!")
 
 if not DISCORD_TOKEN:
-    print("❌ ERROR: DISCORD_TOKEN environment variable not set!")
-    exit(1)
+    print("⚠️ WARNING: DISCORD_TOKEN not set! Bot will not run.")
+    print("ℹ️ Add DISCORD_TOKEN to Railway variables to enable bot.")
+    DISCORD_TOKEN = None
 else:
     print(f"✅ Discord Token found. Bot starting...")
 
@@ -691,4 +692,12 @@ def load_single_user(user_id):
     return True
 
 if __name__ == "__main__":
-    bot.run(DISCORD_TOKEN)
+    if DISCORD_TOKEN:
+        bot.run(DISCORD_TOKEN)
+    else:
+        print("❌ Cannot start bot: DISCORD_TOKEN not provided.")
+        print("ℹ️ Web server will still run. Configure DISCORD_TOKEN in Railway variables.")
+        # Keep the process alive so Railway doesn't restart
+        import time
+        while True:
+            time.sleep(60)
