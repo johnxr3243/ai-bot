@@ -169,11 +169,23 @@ async def cleanup_old_data():
 async def on_ready():
     print(f"✨ **البوت شغال** دلوقتي كـ {bot.user}")
     load_data()
-    watch_files.start()
-    cleanup_old_data.start()
+    
+    # تشغيل المهام الجانبية
+    if not watch_files.is_running(): watch_files.start()
+    if not cleanup_old_data.is_running(): cleanup_old_data.start()
+    
     bot.loop.create_task(check_inactive_users())
     bot.loop.create_task(check_reminders_task())
     print(f"✅ تم تحميل {len(user_data)} مستخدم")
+
+    # --- هذا هو الجزء الناقص الذي يربط ملف التذاكر ---
+    try:
+        from luxury_tickets import setup
+        await setup(bot)
+        print("✅ تم تحميل نظام التذاكر بنجاح!")
+    except Exception as e:
+        print(f"❌ فشل تحميل نظام التذاكر. تأكد من وجود ملف luxury_tickets.py بجانب bot.py")
+        print(f"الخطأ: {e}")
 
 def get_quick_response(message, user_data):
     """ردود سريعة مبرمجة"""
