@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# تشغيل Discord bot في الخلفية
-python bot.py &
+# تشغيل البوت والويب في نفس الوقت
+# استخدام nohup لضمان استمرارية التشغيل
 
-# تشغيل FastAPI (العملية الرئيسية)
-uvicorn main:app --host 0.0.0.0 --port $PORT
+# تشغيل البوت في الخلفية
+nohup python bot.py > bot.log 2>&1 &
+
+# تشغيل الويب
+uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
