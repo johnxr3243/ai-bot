@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# تشغيل البوت في الخلفية مع تفعيل الـ Unbuffered mode للـ Logs
 python bot.py 
-
-# تشغيل الموقع (وهو ده اللي Railway هيراقبه)
+git add .
+git commit -m "Final clean build without secrets"
 python main.py
