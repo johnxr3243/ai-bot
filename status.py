@@ -1,3 +1,65 @@
+# ==================== TOKEN RESOLVER ====================
+import os
+import sys
+
+def resolve_token():
+    """حل التوكن من أي مصدر"""
+    
+    # 1. أولاً: البحث في متغيرات البيئة
+    env_names = ['DISCORD_TOKEN', 'DISCORD_BOT_TOKEN', 'TOKEN', 'BOT_TOKEN']
+    
+    for name in env_names:
+        token = os.getenv(name)
+        if token and token.strip():
+            print(f"✅ وجد التوكن في: {name}")
+            return token.strip()
+    
+    # 2. ثانياً: البحث في Railway Secrets (إذا كان هناك ملف خاص)
+    secret_paths = [
+        '/run/secrets/DISCORD_TOKEN',
+        '/etc/secrets/DISCORD_TOKEN',
+        '.secrets/discord_token',
+    ]
+    
+    for path in secret_paths:
+        if os.path.exists(path):
+            try:
+                with open(path, 'r') as f:
+                    token = f.read().strip()
+                    if token:
+                        print(f"✅ وجد التوكن في ملف: {path}")
+                        return token
+            except:
+                pass
+    
+    # 3. ثالثاً: فشل البحث
+    print("❌ فشل العثور على التوكن!")
+    print("\n🔍 متغيرات النظام:")
+    for key in os.environ:
+        if 'TOKEN' in key or 'DISCORD' in key:
+            val = os.getenv(key)
+            print(f"   {key}: {'•' * len(val) if val else 'غير محدد'}")
+    
+    print("\n🚨 الخطوات اللازمة:")
+    print("1. اذهب إلى Discord Developer Portal")
+    print("2. Applications → Your Bot → Bot → Reset Token")
+    print("3. انسخ التوكن الجديد")
+    print("4. اذهب إلى Railway Dashboard")
+    print("5. Settings → Variables → Add Variable")
+    print("6. Name: DISCORD_TOKEN")
+    print("7. Value: التوكن_الجديد")
+    print("8. Save → Redeploy")
+    
+    sys.exit(1)
+
+TOKEN = resolve_token()
+print(f"🔐 التوكن جاهز (الطول: {len(TOKEN)})")
+# =======================================================
+
+# ثم باقي الكود...
+intents = discord.Intents.default()
+# ... إلخ
+
 import discord
 from discord.ext import commands, tasks
 import asyncio
