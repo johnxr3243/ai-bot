@@ -2460,38 +2460,7 @@ def load_single_user(user_id):
         save_user_data(user_id)
     return True
 
-# ============================================
-# نظام التذاكر الفاخم
-# ============================================
 
-# ============================================
-# تشغيل البوت
-# ============================================
-
-@bot.event
-async def on_ready():
-    print(f"✨ **البوت شغال** دلوقتي كـ {bot.user}")
-    load_data()
-    # تشغيل المهام الجانبية
-    if not watch_files.is_running(): watch_files.start()
-    if not cleanup_old_data.is_running(): cleanup_old_data.start()
-    
-    bot.loop.create_task(check_inactive_users())
-    bot.loop.create_task(check_reminders_task())
-    
-    # تحميل نظام التذاكر من الملف الثاني
-    try:
-        from luxury_tickets import setup
-        await setup(bot)
-        print("✅ تم تحميل نظام التذاكر")
-    except Exception as e:
-        print(f"❌ خطأ في تحميل نظام التذاكر: {e}")
-
-if __name__ == "__main__":
-    if DISCORD_TOKEN:
-        bot.run(DISCORD_TOKEN)
-    else:
-        print("❌ لم يتم العثور على التوكن DISCORD_TOKEN")
 
 if __name__ == "__main__":
     if DISCORD_TOKEN:

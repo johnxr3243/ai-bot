@@ -13,8 +13,6 @@ class LuxuryTickets(commands.Cog):
         self.bot = bot
         self.config_file = "luxury_tickets_config.json"
         self.tickets_file = "luxury_tickets_data.json"
-        self.config = self.load_config()
-        self.tickets = self.load_tickets()
         
         # ألوان فاخمة داكنة
         self.colors = {
@@ -60,7 +58,9 @@ class LuxuryTickets(commands.Cog):
                 {"name": "أخرى", "emoji": "❓", "color": self.colors['secondary']}
             ]
         }
-        
+        self.config = self.load_config()
+        self.tickets = self.load_tickets()
+        self.auto_save.start()
         self.auto_save.start()
     
     def load_config(self):
