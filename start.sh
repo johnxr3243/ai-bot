@@ -1,18 +1,8 @@
 #!/bin/bash
 
-# تشغيل البوت والويب معاً بشكل متزامن
+# Start both bot and web server
 python bot.py &
-BOT_PID=$!
+python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} &
 
-# تشغيل الويب
-python -m uvicorn main:app --host 0.0.0.0 --port $PORT &
-WEB_PID=$!
-
-# الانتظار حتى يتوقف أحد العمليات
-wait -n
-EXIT_CODE=$?
-
-# قتل العملية الأخرى عند توقف إحداهما
-kill $BOT_PID $WEB_PID 2>/dev/null
-
-exit $EXIT_CODE
+# Wait for all background processes
+wait
