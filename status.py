@@ -489,7 +489,3 @@ async def reload_status(ctx):
     global current_status
     current_status = 0
     await ctx.send("🔄 تم إعادة تعيين الحالات إلى البداية")
-
-# تشغيل البوت
-TOKEN = "MTQ1ODQxNzUyOTQ1NzIxMzU2OA.GhyFtf.lKUYh6aPahQ9IPYQhTZGD4YFPcMirZaLn1aXOE"
-bot.run(TOKEN)
