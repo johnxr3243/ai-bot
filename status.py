@@ -480,7 +480,7 @@ async def add_status(ctx, *, status_info: str):
         await ctx.send(f"✅ تمت إضافة حالة جديدة: **{new_status['name']}**")
         
     except Exception as e:
-        await ctx.send(f"❌ حدث خطأ: {str(e)}")
+        await ctx.send(f"❌ احدث خطأ: {str(e)}")
 
 @bot.command()
 @commands.has_permissions(administrator=True)
