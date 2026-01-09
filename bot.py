@@ -165,10 +165,8 @@ async def cleanup_old_data():
     except Exception as e:
         print(f"❌ خطأ في التنظيف: {e}")
 
-@bot.event
-async def on_ready():
-    print(f"✨ **البوت شغال** دلوقتي كـ {bot.user}")
-    load_data()
+if not bot.get_cog("LuxuryTickets"):
+            await setup(bot)
     
     # تشغيل المهام الجانبية
     if not watch_files.is_running(): watch_files.start()

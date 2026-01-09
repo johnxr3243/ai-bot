@@ -60,8 +60,8 @@ class LuxuryTickets(commands.Cog):
         }
         self.config = self.load_config()
         self.tickets = self.load_tickets()
-        self.auto_save.start()
-        self.auto_save.start()
+        if not self.auto_save.is_running():
+            self.auto_save.start()
     
     def load_config(self):
         """تحميل الإعدادات"""
