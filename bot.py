@@ -2460,6 +2460,13 @@ def load_single_user(user_id):
         save_user_data(user_id)
     return True
 
+# في آخر ملف bot.py تماماً
+from tickets import setup
+setup(bot)
+
+print("✅ نظام التذاكر مضاف للبوت!")
+
+
 if __name__ == "__main__":
     if DISCORD_TOKEN:
         bot.run(DISCORD_TOKEN)
