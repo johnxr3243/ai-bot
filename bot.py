@@ -2460,12 +2460,64 @@ def load_single_user(user_id):
         save_user_data(user_id)
     return True
 
-# في آخر ملف bot.py تماماً
-from tickets import setup
-setup(bot)
+# ============================================
+# إصلاح أخطاء الأوامر
+# ============================================
 
-print("✅ نظام التذاكر مضاف للبوت!")
+@bot.event
+async def on_command_error(ctx, error):
+    """إصلاح أخطاء الأوامر مثل <5"""
+    if isinstance(error, commands.CommandNotFound):
+        if ctx.message.content and len(ctx.message.content) > 0:
+            first_char = ctx.message.content[0]
+            if first_char in ['<', '>', '=', '+', '-', '*', '/']:
+                return
+    print(f"⚠️ خطأ: {error}")
 
+# ============================================
+# نظام التذاكر
+# ============================================
+
+async def load_tickets_system():
+    """تحميل نظام التذاكر"""
+    try:
+        # استيراد نظام التذاكر
+        from tickets import setup
+        
+        # إضافة النظام للبوت
+        await setup(bot)
+        print("✅ نظام التذاكر مضاف بنجاح!")
+        
+    except Exception as e:
+        print(f"❌ خطأ في تحميل نظام التذاكر: {e}")
+
+# تحميل نظام التذاكر عند تشغيل البوت
+@bot.event
+async def on_ready():
+    print(f"✨ **البوت شغال** دلوقتي كـ {bot.user}")
+    load_data()
+    watch_files.start()
+    cleanup_old_data.start()
+    bot.loop.create_task(check_inactive_users())
+    bot.loop.create_task(check_reminders_task())
+    print(f"✅ تم تحميل {len(user_data)} مستخدم")
+    
+    # تحميل نظام التذاكر
+    await load_tickets_system()
+
+# ============================================
+# تشغيل البوت
+# ============================================
+
+if __name__ == "__main__":
+    if DISCORD_TOKEN:
+        bot.run(DISCORD_TOKEN)
+    else:
+        print("❌ Cannot start bot: DISCORD_TOKEN not provided.")
+        print("ℹ️ Web server will still run. Configure DISCORD_TOKEN in Railway variables.")
+        import time
+        while True:
+            time.sleep(60)
 
 if __name__ == "__main__":
     if DISCORD_TOKEN:
