@@ -165,25 +165,15 @@ async def cleanup_old_data():
     except Exception as e:
         print(f"❌ خطأ في التنظيف: {e}")
 
-if not bot.get_cog("LuxuryTickets"):
-            await setup(bot)
-    
-    # تشغيل المهام الجانبية
-    if not watch_files.is_running(): watch_files.start()
-    if not cleanup_old_data.is_running(): cleanup_old_data.start()
-    
+@bot.event
+async def on_ready():
+    print(f"✨ **البوت شغال** دلوقتي كـ {bot.user}")
+    load_data()
+    watch_files.start()
+    cleanup_old_data.start()
     bot.loop.create_task(check_inactive_users())
     bot.loop.create_task(check_reminders_task())
     print(f"✅ تم تحميل {len(user_data)} مستخدم")
-
-    # --- هذا هو الجزء الناقص الذي يربط ملف التذاكر ---
-    try:
-        from luxury_tickets import setup
-        await setup(bot)
-        print("✅ تم تحميل نظام التذاكر بنجاح!")
-    except Exception as e:
-        print(f"❌ فشل تحميل نظام التذاكر. تأكد من وجود ملف luxury_tickets.py بجانب bot.py")
-        print(f"الخطأ: {e}")
 
 def get_quick_response(message, user_data):
     """ردود سريعة مبرمجة"""
@@ -2469,8 +2459,6 @@ def load_single_user(user_id):
         user_conversation_history[user_id] = []
         save_user_data(user_id)
     return True
-
-
 
 if __name__ == "__main__":
     if DISCORD_TOKEN:
