@@ -2463,7 +2463,29 @@ def load_single_user(user_id):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    await bot.change_presence(activity=discord.Streaming(name="My Stream", url="https://tv"))
+    
+    async def update_status():
+        while True:
+            await bot.change_presence(activity=discord.Streaming(
+                name="Sienna AI Dashboard", 
+                url="https://twitch.tv/discord"
+            ))
+            await asyncio.sleep(15)
+            
+            await bot.change_presence(activity=discord.Activity(
+                type=discord.ActivityType.listening, 
+                name="!ask for help"
+            ))
+            await asyncio.sleep(15)
+            
+            await bot.change_presence(activity=discord.Activity(
+                type=discord.ActivityType.watching, 
+                name="120 Servers"
+            ))
+            await asyncio.sleep(15)
+    
+    # Start the status update loop
+    bot.loop.create_task(update_status())
 
 if __name__ == "__main__":
     if DISCORD_TOKEN:
